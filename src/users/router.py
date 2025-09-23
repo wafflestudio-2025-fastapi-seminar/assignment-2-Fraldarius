@@ -10,7 +10,7 @@ from fastapi import (
 
 from src.users.schemas import CreateUserRequest, UserResponse
 from src.common.database import blocked_token_db, session_db, user_db
-from src.common import CustomException
+from src.common.custom_exception import CustomException
 
 from src.auth.router import decode_token, extract_token_from_header
 

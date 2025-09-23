@@ -1,4 +1,4 @@
-from src.common.custome_exception import CustomException
+from src.common.custom_exception import CustomException
 
 class MissingFieldException(CustomException):
     def __init__(self):
