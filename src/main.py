@@ -8,9 +8,38 @@ app = FastAPI()
 
 app.include_router(api_router)
 
+@app.exception_handler(CustomException)
+async def handle_custom_exception(request: Request, exc: CustomException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error_code": exc.error_code,
+            "error_msg": exc.error_message,
+        },
+    )
+
 @app.exception_handler(RequestValidationError)
-def handle_request_validation_error(request, exc):
-    pass
+async def handle_request_validation_error(request: Request, exc: RequestValidationError):
+    missing_fields = [
+        e["loc"][-1] for e in exc.errors() if e["type"] == "missing"
+    ]
+    if missing_fields:
+        custom_exc = MissingFieldException()
+        return JSONResponse(
+            status_code=custom_exc.status_code,
+            content={
+                "error_code": custom_exc.error_code,
+                "error_msg": custom_exc.error_message,
+            },
+        )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error_code": exc.error_code,
+            "error_msg": exc.error_message,
+        },
+    )
 
 @app.get("/health")
 def health_check():
