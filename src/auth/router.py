@@ -1,12 +1,12 @@
 import jwt
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Cookie, Header, status, Request
 from fastapi.responses import JSONResponse
 
-from common.database import blocked_token_db, session_db, user_db
+from src.common.database import blocked_token_db, session_db, user_db
 
-from users.errors import (
+from src.users.errors import (
     MissingFieldException,
     CustomException,
 )
@@ -18,29 +18,6 @@ LONG_SESSION_LIFESPAN = 24 * 60
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
-
-import jwt
-import bcrypt
-from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Header, status
-from fastapi.responses import JSONResponse
-
-from common.database import blocked_token_db, user_db
-
-from users.errors import (
-    MissingFieldException,
-    CustomException,
-)
-
-auth_router = APIRouter(prefix="/auth", tags=["auth"])
-
-# JWT 시크릿/알고리즘
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-
-SHORT_SESSION_LIFESPAN = 15      # minutes
-LONG_SESSION_LIFESPAN = 24 * 60  # minutes
-
 
 def create_token(user_id: int, minutes: int):
     expire = datetime.now(timezone.utc) + timedelta(minutes=minutes)

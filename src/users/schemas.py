@@ -3,13 +3,13 @@ import re
 from pydantic import BaseModel, field_validator, EmailStr
 from fastapi import HTTPException
 
-from users.errors import MissingFieldException
-from users.errors import InvalidPasswordException
-from users.errors import InvalidPhoneException
-from users.errors import InvalidBioException
-from users.errors import DuplicatedEmailException
+from src.users.errors import MissingFieldException
+from src.users.errors import InvalidPasswordException
+from src.users.errors import InvalidPhoneException
+from src.users.errors import InvalidBioException
+from src.users.errors import DuplicatedEmailException
 
-from common.database import user_db
+from src.common.database import user_db
 
 class CreateUserRequest(BaseModel):
     name: str
