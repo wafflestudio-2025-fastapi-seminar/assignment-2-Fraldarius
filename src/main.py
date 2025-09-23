@@ -8,6 +8,8 @@ from src.api import api_router
 
 from src.common import CustomException
 
+from src.users.errors import MissingFieldException
+
 app = FastAPI()
 
 app.include_router(api_router)

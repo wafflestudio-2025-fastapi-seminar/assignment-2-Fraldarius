@@ -7,10 +7,7 @@ from fastapi.responses import JSONResponse
 
 from src.common.database import blocked_token_db, session_db, user_db
 
-from src.users.errors import (
-    MissingFieldException,
-    CustomException,
-)
+from src.users.errors import MissingFieldException
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
