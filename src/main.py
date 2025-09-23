@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi import APIRouter, Depends, Cookie, Header, status, Request, Response
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from tests.util import get_all_src_py_files_hash
 from src.api import api_router
