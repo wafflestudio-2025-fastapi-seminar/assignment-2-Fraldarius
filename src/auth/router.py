@@ -1,5 +1,6 @@
 import jwt
 import bcrypt
+import uuid
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Cookie, Header, status, Request, Response
 from fastapi.responses import JSONResponse
