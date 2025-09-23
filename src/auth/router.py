@@ -1,7 +1,7 @@
 import jwt
 import bcrypt
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, Cookie, Header, status, Request
+from fastapi import APIRouter, Depends, Cookie, Header, status, Request, Response
 from fastapi.responses import JSONResponse
 
 from src.common.database import blocked_token_db, session_db, user_db
@@ -121,7 +121,8 @@ def logout(Authorization: str | None = Header(default=None)):
     blocked_token_db[token] = exp
     return JSONResponse(status_code=204, content=None)
 
-@auth_router.post("/session")
+
+@auth_router.post("/session", status_code=status.HTTP_200_OK)
 def login_session(request: dict, response: Response):
     email = request.get("email")
     password = request.get("password")
