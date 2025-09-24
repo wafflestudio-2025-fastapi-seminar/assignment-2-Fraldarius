@@ -120,7 +120,6 @@ def logout(Authorization: str | None = Header(default=None)):
     blocked_token_db[token] = exp
     return JSONResponse(status_code=204, content=None)
 
-
 @auth_router.post("/session", status_code=status.HTTP_200_OK)
 def login_session(request: dict, response: Response):
     email = request.get("email")
@@ -152,16 +151,18 @@ def login_session(request: dict, response: Response):
         "expire": expire
     }
 
-    # Set sid as client's cookie
+    # ✅ Set sid as client's cookie
     response.set_cookie(
         key="sid",
         value=sid,
         httponly=True,
-        max_age=LONG_SESSION_LIFESPAN * 60,  # seconds
+        max_age=LONG_SESSION_LIFESPAN * 60,
         samesite="lax"
     )
 
-    return JSONResponse(status_code=200, content=None)
+    # ✅ 그대로 response 리턴
+    response.status_code = status.HTTP_200_OK
+    return response
 
 @auth_router.delete("/session", status_code=status.HTTP_204_NO_CONTENT)
 def logout_session(request: Request, response: Response):
