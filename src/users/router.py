@@ -5,7 +5,8 @@ from fastapi import (
     Depends,
     Cookie,
     Header,
-    status
+    status,
+    Request
 )
 
 from src.users.schemas import CreateUserRequest, UserResponse
@@ -16,6 +17,8 @@ from src.auth.router import decode_token, extract_token_from_header
 
 import bcrypt
 from fastapi.responses import JSONResponse
+
+from datetime import datetime, timedelta, timezone
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -49,35 +52,38 @@ def create_user(request: CreateUserRequest) -> UserResponse:
     return response.model_dump(exclude_none=True)
 
 @user_router.get("/me")
-def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | None = Header(default=None),):
+def get_user_info(request: Request, Authorization: str | None = Header(default=None),):
     # -------------------------------
     # 1. Session-based authentication
     # -------------------------------
+    sid = request.cookies.get("sid")
     if sid:
         session = session_db.get(sid)
-        if not session or session["expire"] < datetime.now(timezone.utc):
-            raise CustomException(
-                status_code=401,
-                error_code="ERR_006",
-                error_message="INVALID SESSION",
-            )
-            
-        # finding user
-        user = None
-        for u in user_db:
-            if u["email"] == email:
-                user = u
+        if session is not None:
+            if session["expire"] < datetime.now(timezone.utc):
+                raise CustomException(
+                    status_code=401,
+                    error_code="ERR_006",
+                    error_message="INVALID SESSION",
+                )
 
-        if not user:
-            raise CustomException(
-                status_code=401,
-                error_code="ERR_006",
-                error_message="INVALID SESSION",
-            )
+            # finding user
+            user = None
+            user_id = session["user_id"]
+            for u in user_db:
+                if u["user_id"] == user_id:
+                    user = u
 
-        # remove hashed_password for response
-        clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
-        return UserResponse(**clean_user).model_dump(exclude_none=True)
+            if not user:
+                raise CustomException(
+                    status_code=401,
+                    error_code="ERR_006",
+                    error_message="INVALID SESSION",
+                )
+
+            # remove hashed_password for response
+            clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
+            return UserResponse(**clean_user).model_dump(exclude_none=True)
 
     # -------------------------------
     # 2. Token-based authentication
