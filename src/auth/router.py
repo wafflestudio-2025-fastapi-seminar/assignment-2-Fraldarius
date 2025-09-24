@@ -163,7 +163,7 @@ def login_session(request: dict, response: Response):
 
     return JSONResponse(status_code=200, content=None)
 
-@auth_router.delete("/session")
+@auth_router.delete("/session", status_code=status.HTTP_204_NO_CONTENT)
 def logout_session(request: Request, response: Response):
     sid = request.cookies.get("sid")
 
@@ -179,5 +179,6 @@ def logout_session(request: Request, response: Response):
         if sid in session_db:
             del session_db[sid]
 
-    # return 204
-    return JSONResponse(status_code=204, content=None)
+    # ✅ 그대로 response 리턴 (새 JSONResponse 만들지 않음)
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return response
