@@ -161,12 +161,17 @@ def login_session(request: dict, response: Response):
 @auth_router.delete("/session")
 def logout_session(response: Response, sid: str | None = Cookie(default=None)):
     if sid:
-        # sid 쿠키 제거
-        response.delete_cookie(key="sid")
+        # ✅ 쿠키 만료 확실히 (Set-Cookie 헤더 추가됨)
+        response.set_cookie(
+            key="sid",
+            value="",
+            httponly=True,
+            max_age=0,
+            expires=0,
+            samesite="lax"
+        )
 
-        # 세션 제거
         if sid in session_db:
             del session_db[sid]
 
-    # 항상 204 반환
     return JSONResponse(status_code=204, content=None)

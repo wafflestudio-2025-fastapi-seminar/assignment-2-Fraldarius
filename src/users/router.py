@@ -50,7 +50,9 @@ def create_user(request: CreateUserRequest) -> UserResponse:
 
 @user_router.get("/me")
 def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | None = Header(default=None),):
+    # -------------------------------
     # 1. Session-based authentication
+    # -------------------------------
     if sid:
         session = session_db.get(sid)
         if not session or session["expire"] < datetime.now(timezone.utc):
@@ -66,9 +68,14 @@ def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | N
                 error_code="ERR_006",
                 error_message="INVALID SESSION",
             )
-        return UserResponse(**user).model_dump(exclude={"hashed_password"})
 
+        # ✅ hashed_password 제거
+        clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
+        return UserResponse(**clean_user).model_dump(exclude_none=True)
+
+    # -------------------------------
     # 2. Token-based authentication
+    # -------------------------------
     if Authorization:
         token = extract_token_from_header(Authorization)
         if token in blocked_token_db:
@@ -87,9 +94,14 @@ def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | N
                 error_code="ERR_008",
                 error_message="INVALID TOKEN",
             )
-        return UserResponse(**user).model_dump(exclude={"hashed_password"})
 
-    # 3. 둘 다 없는 경우
+        # ✅ hashed_password 제거
+        clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
+        return UserResponse(**clean_user).model_dump(exclude_none=True)
+
+    # -------------------------------
+    # 3. 인증 정보 없음
+    # -------------------------------
     raise CustomException(
         status_code=401,
         error_code="ERR_009",
