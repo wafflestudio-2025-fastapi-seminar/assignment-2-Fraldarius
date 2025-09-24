@@ -129,8 +129,13 @@ def login_session(request: dict, response: Response):
     if not email or not password:
         raise MissingFieldException()
 
-    # 유저 찾기
-    user = next((u for u in user_db if u["email"] == email), None)
+    # finding user
+    user = None
+    for u in user_db:
+        if u["email"] == email:
+            user = u
+    
+    # no user, or not authenticated
     if not user or not bcrypt.checkpw(password.encode("utf-8"), user["hashed_password"]):
         raise CustomException(
             status_code=401,
@@ -138,7 +143,7 @@ def login_session(request: dict, response: Response):
             error_message="INVALID ACCOUNT"
         )
 
-    # 세션 생성
+    # create session
     sid = str(uuid.uuid4())
     expire = datetime.now(timezone.utc) + timedelta(minutes=LONG_SESSION_LIFESPAN)
 
@@ -147,7 +152,7 @@ def login_session(request: dict, response: Response):
         "expire": expire
     }
 
-    # Set sid cookie
+    # Set sid as client's cookie
     response.set_cookie(
         key="sid",
         value=sid,
@@ -156,22 +161,23 @@ def login_session(request: dict, response: Response):
         samesite="lax"
     )
 
-    return {"message": "Session created successfully"}
+    return JSONResponse(status_code=200, content=None)
 
 @auth_router.delete("/session")
-def logout_session(response: Response, sid: str | None = Cookie(default=None)):
+def logout_session(request: Request, response: Response):
+    sid = request.cookies.get("sid")
+
     if sid:
-        # ✅ 쿠키 만료 확실히 (Set-Cookie 헤더 추가됨)
-        response.set_cookie(
+        # delete sid cookie
+        response.delete_cookie(
             key="sid",
-            value="",
             httponly=True,
-            max_age=0,
-            expires=0,
             samesite="lax"
         )
 
+        # remove session
         if sid in session_db:
             del session_db[sid]
 
+    # return 204
     return JSONResponse(status_code=204, content=None)

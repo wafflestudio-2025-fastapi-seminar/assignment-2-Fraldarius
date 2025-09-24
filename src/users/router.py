@@ -61,7 +61,13 @@ def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | N
                 error_code="ERR_006",
                 error_message="INVALID SESSION",
             )
-        user = next((u for u in user_db if u["user_id"] == session["user_id"]), None)
+            
+        # finding user
+        user = None
+        for u in user_db:
+            if u["email"] == email:
+                user = u
+
         if not user:
             raise CustomException(
                 status_code=401,
@@ -69,7 +75,7 @@ def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | N
                 error_message="INVALID SESSION",
             )
 
-        # ✅ hashed_password 제거
+        # remove hashed_password for response
         clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
         return UserResponse(**clean_user).model_dump(exclude_none=True)
 
@@ -95,7 +101,7 @@ def get_user_info(sid: str | None = Cookie(default=None), Authorization: str | N
                 error_message="INVALID TOKEN",
             )
 
-        # ✅ hashed_password 제거
+        # remove hashed_password for response
         clean_user = {k: v for k, v in user.items() if k != "hashed_password"}
         return UserResponse(**clean_user).model_dump(exclude_none=True)
 
